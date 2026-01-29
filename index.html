@@ -1,0 +1,1615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SuitX Intelligence Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;800&family=Sora:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0e14;
+            --bg-secondary: #151b24;
+            --bg-tertiary: #1a2330;
+            --accent-primary: #00d9ff;
+            --accent-secondary: #7b61ff;
+            --accent-tertiary: #ff6b9d;
+            --text-primary: #e6edf3;
+            --text-secondary: #8b949e;
+            --success: #3fb950;
+            --warning: #f0883e;
+            --danger: #d62828;
+            --grid-glow: rgba(0, 217, 255, 0.15);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Sora', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(123, 97, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(0, 217, 255, 0.08) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            max-width: 1800px;
+            margin: 0 auto;
+            padding: 2rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Header with Toggle */
+        header {
+            margin-bottom: 3rem;
+            animation: slideDown 0.6s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -0.02em;
+        }
+
+        .status-badge {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            padding: 0.3rem 0.6rem;
+            background: rgba(0, 217, 255, 0.1);
+            border: 1px solid var(--accent-primary);
+            border-radius: 4px;
+            color: var(--accent-primary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* Toggle Switch */
+        .view-toggle {
+            display: flex;
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            padding: 0.25rem;
+            gap: 0.25rem;
+        }
+
+        .toggle-btn {
+            font-family: 'Sora', sans-serif;
+            padding: 0.6rem 1.5rem;
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.85rem;
+            font-weight: 600;
+            position: relative;
+        }
+
+        .toggle-btn.active {
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            color: #000;
+            box-shadow: 0 4px 12px rgba(0, 217, 255, 0.3);
+        }
+
+        .toggle-btn:hover:not(.active) {
+            color: var(--text-primary);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn {
+            font-family: 'Sora', sans-serif;
+            padding: 0.6rem 1.2rem;
+            background: var(--bg-tertiary);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .btn:hover {
+            background: var(--bg-secondary);
+            border-color: var(--accent-primary);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 217, 255, 0.2);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            border: none;
+            color: #000;
+        }
+
+        .btn-primary:hover {
+            box-shadow: 0 4px 16px rgba(0, 217, 255, 0.4);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.02em;
+        }
+
+        .subtitle {
+            font-size: 1rem;
+            color: var(--text-secondary);
+            font-weight: 300;
+        }
+
+        /* Dashboard Views */
+        .dashboard-view {
+            display: none;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .dashboard-view.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Metrics Grid */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+            animation: fadeInUp 0.6s ease-out 0.1s both;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .metric-card {
+            background: var(--bg-secondary);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 1.5rem;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .metric-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .metric-card:hover {
+            border-color: rgba(0, 217, 255, 0.3);
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+        }
+
+        .metric-card:hover::before {
+            opacity: 1;
+        }
+
+        .metric-label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .metric-value {
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.02em;
+            color: var(--text-primary);
+        }
+
+        .metric-trend {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+        }
+
+        .trend-positive {
+            color: var(--success);
+        }
+
+        .trend-warning {
+            color: var(--warning);
+        }
+
+        .trend-arrow {
+            font-weight: 800;
+        }
+
+        /* Dashboard Grid */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Card Styles */
+        .card {
+            background: var(--bg-secondary);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 1.5rem;
+            animation: fadeInUp 0.6s ease-out both;
+        }
+
+        .card:nth-child(1) { animation-delay: 0.2s; }
+        .card:nth-child(2) { animation-delay: 0.3s; }
+        .card:nth-child(3) { animation-delay: 0.4s; }
+        .card:nth-child(4) { animation-delay: 0.5s; }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-primary);
+        }
+
+        .card-icon {
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 217, 255, 0.1);
+            border-radius: 6px;
+            color: var(--accent-primary);
+        }
+
+        .card-badge {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem;
+            padding: 0.25rem 0.5rem;
+            background: rgba(0, 217, 255, 0.1);
+            border: 1px solid var(--accent-primary);
+            border-radius: 4px;
+            color: var(--accent-primary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* Production Lines */
+        .production-lines {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .line-item {
+            display: grid;
+            grid-template-columns: 140px 1fr 80px;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .line-name {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .line-bar {
+            height: 32px;
+            background: var(--bg-tertiary);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .line-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+            border-radius: 3px;
+            transition: width 0.8s ease-out;
+            display: flex;
+            align-items: center;
+            padding-left: 0.5rem;
+            animation: growBar 1s ease-out both;
+        }
+
+        @keyframes growBar {
+            from {
+                width: 0 !important;
+            }
+        }
+
+        .line-percentage {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-align: right;
+            color: var(--text-primary);
+        }
+
+        /* Persona Grid */
+        .persona-grid {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .persona-item {
+            background: var(--bg-tertiary);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.2s ease;
+        }
+
+        .persona-item:hover {
+            border-color: var(--accent-primary);
+            background: rgba(0, 217, 255, 0.05);
+        }
+
+        .persona-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .persona-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-secondary), var(--accent-tertiary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: #000;
+        }
+
+        .persona-details h4 {
+            font-size: 0.95rem;
+            margin-bottom: 0.25rem;
+            color: var(--text-primary);
+        }
+
+        .persona-details p {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .engagement-score {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--accent-primary);
+        }
+
+        /* Content List */
+        .content-list {
+            display: grid;
+            gap: 0.75rem;
+        }
+
+        .content-item {
+            background: var(--bg-tertiary);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 1rem;
+            transition: all 0.2s ease;
+        }
+
+        .content-item:hover {
+            border-color: var(--accent-secondary);
+            background: rgba(123, 97, 255, 0.05);
+        }
+
+        .content-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 0.5rem;
+        }
+
+        .content-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .content-type {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem;
+            padding: 0.25rem 0.5rem;
+            background: rgba(0, 217, 255, 0.1);
+            border: 1px solid var(--accent-primary);
+            border-radius: 4px;
+            color: var(--accent-primary);
+            text-transform: uppercase;
+        }
+
+        .content-stats {
+            display: flex;
+            gap: 1.5rem;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .stat {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .full-width {
+            grid-column: 1 / -1;
+        }
+
+        /* Chart Container */
+        .chart-container {
+            height: 300px;
+            position: relative;
+            margin-top: 1rem;
+        }
+
+        .bar-chart {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            height: 100%;
+            gap: 1rem;
+        }
+
+        .bar {
+            flex: 1;
+            background: linear-gradient(180deg, var(--accent-primary), var(--accent-secondary));
+            border-radius: 6px 6px 0 0;
+            position: relative;
+            transition: all 0.3s ease;
+            animation: growUp 0.8s ease-out both;
+        }
+
+        @keyframes growUp {
+            from {
+                transform: scaleY(0);
+                transform-origin: bottom;
+            }
+            to {
+                transform: scaleY(1);
+                transform-origin: bottom;
+            }
+        }
+
+        .bar:nth-child(1) { animation-delay: 0.1s; }
+        .bar:nth-child(2) { animation-delay: 0.2s; }
+        .bar:nth-child(3) { animation-delay: 0.3s; }
+        .bar:nth-child(4) { animation-delay: 0.4s; }
+        .bar:nth-child(5) { animation-delay: 0.5s; }
+
+        .bar:hover {
+            filter: brightness(1.2);
+            transform: translateY(-4px);
+        }
+
+        .bar-label {
+            position: absolute;
+            bottom: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .bar-value {
+            position: absolute;
+            top: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* ROI Calculator */
+        .roi-calculator {
+            background: linear-gradient(135deg, rgba(0, 217, 255, 0.1), rgba(123, 97, 255, 0.1));
+            border: 1px solid rgba(0, 217, 255, 0.2);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-top: 1.5rem;
+        }
+
+        .roi-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+            margin-top: 1.5rem;
+        }
+
+        .roi-metric {
+            text-align: center;
+        }
+
+        .roi-metric-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+        }
+
+        .roi-metric-label {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* Insight Panel */
+        .insight-panel {
+            background: rgba(255, 107, 157, 0.05);
+            border: 1px solid rgba(255, 107, 157, 0.2);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .insight-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .insight-icon {
+            width: 32px;
+            height: 32px;
+            background: rgba(255, 107, 157, 0.2);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent-tertiary);
+            font-size: 1.2rem;
+        }
+
+        .insight-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--accent-tertiary);
+        }
+
+        .insight-list {
+            display: grid;
+            gap: 0.75rem;
+        }
+
+        .insight-item {
+            display: flex;
+            align-items: start;
+            gap: 0.75rem;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            color: var(--text-primary);
+        }
+
+        .insight-bullet {
+            width: 6px;
+            height: 6px;
+            background: var(--accent-tertiary);
+            border-radius: 50%;
+            margin-top: 0.5rem;
+            flex-shrink: 0;
+        }
+
+        /* Inventory Grid */
+        .inventory-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+
+        .inventory-item {
+            padding: 1rem;
+            background: var(--bg-tertiary);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            border-left: 3px solid var(--accent-primary);
+        }
+
+        .inventory-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 0.75rem;
+        }
+
+        .inventory-name {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: var(--text-primary);
+        }
+
+        .inventory-status {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem;
+            padding: 0.2rem 0.4rem;
+            background: var(--bg-secondary);
+            border: 1px solid;
+            border-radius: 4px;
+            text-transform: uppercase;
+        }
+
+        .status-ok { color: var(--success); border-color: var(--success); }
+        .status-low { color: var(--warning); border-color: var(--warning); }
+        .status-critical { color: var(--danger); border-color: var(--danger); }
+
+        .inventory-details {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.5rem;
+            font-size: 0.8rem;
+        }
+
+        .detail-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .detail-label {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .detail-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        /* Orders Table */
+        .orders-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .orders-table thead {
+            background: var(--bg-tertiary);
+            border-bottom: 2px solid var(--accent-primary);
+        }
+
+        .orders-table th {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            text-align: left;
+            padding: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .orders-table td {
+            padding: 0.75rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            font-size: 0.85rem;
+            color: var(--text-primary);
+        }
+
+        .orders-table tbody tr:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .order-id {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 600;
+            color: var(--accent-primary);
+        }
+
+        .order-status {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            padding: 0.25rem 0.5rem;
+            text-transform: uppercase;
+            display: inline-block;
+            border-radius: 4px;
+        }
+
+        .status-shipped { background: var(--success); color: #000; }
+        .status-processing { background: var(--accent-secondary); color: #fff; }
+        .status-pending { background: var(--warning); color: #000; }
+
+        /* Timeline */
+        .timeline {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .timeline-item {
+            display: grid;
+            grid-template-columns: 80px 1fr;
+            gap: 1rem;
+            padding-left: 1rem;
+            border-left: 2px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -5px;
+            top: 8px;
+            width: 8px;
+            height: 8px;
+            background: var(--accent-primary);
+            border-radius: 50%;
+            box-shadow: 0 0 8px var(--accent-primary);
+        }
+
+        .timeline-time {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        .timeline-content {
+            padding-bottom: 1rem;
+        }
+
+        .timeline-title {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+            font-size: 0.9rem;
+            color: var(--text-primary);
+        }
+
+        .timeline-description {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        /* Alert Banner */
+        .alert-banner {
+            background: rgba(240, 136, 62, 0.1);
+            border: 1px solid var(--warning);
+            border-radius: 8px;
+            padding: 1rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .alert-content {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .alert-icon {
+            font-size: 1.5rem;
+        }
+
+        .alert-text {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .alert-description {
+            font-size: 0.85rem;
+            margin-top: 0.25rem;
+            color: var(--text-secondary);
+        }
+
+        .alert-btn {
+            font-family: 'JetBrains Mono', monospace;
+            padding: 0.5rem 1rem;
+            background: var(--warning);
+            color: #000;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            transition: all 0.2s ease;
+        }
+
+        .alert-btn:hover {
+            background: var(--text-primary);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(240, 136, 62, 0.3);
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .roi-grid {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+
+            .inventory-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header-top {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .header-actions {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .btn {
+                width: 100%;
+            }
+
+            .view-toggle {
+                width: 100%;
+            }
+
+            .toggle-btn {
+                flex: 1;
+            }
+
+            .orders-table {
+                font-size: 0.75rem;
+            }
+
+            .orders-table th,
+            .orders-table td {
+                padding: 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-top">
+                <div class="logo-area">
+                    <div class="logo">SUITX</div>
+                    <div class="status-badge">Intelligence Hub</div>
+                </div>
+
+                <div class="view-toggle">
+                    <button class="toggle-btn active" onclick="switchView('marketing')">Marketing</button>
+                    <button class="toggle-btn" onclick="switchView('operations')">Operations</button>
+                </div>
+                
+                <div class="header-actions">
+                    <button class="btn">Export Report</button>
+                    <button class="btn btn-primary">Share Dashboard</button>
+                </div>
+            </div>
+            <h1 id="dashboard-title">Marketing Impact Dashboard</h1>
+            <p class="subtitle" id="dashboard-subtitle">Outcome-focused content performance & customer engagement metrics</p>
+        </header>
+
+        <!-- MARKETING DASHBOARD -->
+        <div id="marketing-view" class="dashboard-view active">
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-label">Customer Stories Published</div>
+                    <div class="metric-value">24</div>
+                    <div class="metric-trend trend-positive">
+                        <span class="trend-arrow">↑</span>
+                        <span>+67% this quarter</span>
+                    </div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-label">Avg. Engagement Rate</div>
+                    <div class="metric-value">8.4%</div>
+                    <div class="metric-trend trend-positive">
+                        <span class="trend-arrow">↑</span>
+                        <span>+2.3% vs. spec sheets</span>
+                    </div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-label">Lead Quality Score</div>
+                    <div class="metric-value">87</div>
+                    <div class="metric-trend trend-positive">
+                        <span class="trend-arrow">↑</span>
+                        <span>+15 pts from outcomes focus</span>
+                    </div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-label">Sales Cycle Reduction</div>
+                    <div class="metric-value">-18d</div>
+                    <div class="metric-trend trend-positive">
+                        <span class="trend-arrow">↑</span>
+                        <span>With ROI summaries</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dashboard-grid">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <div class="card-icon">📊</div>
+                            Content Performance by Type
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <div class="bar-chart">
+                            <div class="bar" style="height: 85%">
+                                <div class="bar-value">85%</div>
+                                <div class="bar-label">Case Studies</div>
+                            </div>
+                            <div class="bar" style="height: 45%">
+                                <div class="bar-value">45%</div>
+                                <div class="bar-label">Spec Sheets</div>
+                            </div>
+                            <div class="bar" style="height: 92%">
+                                <div class="bar-value">92%</div>
+                                <div class="bar-label">Demo Videos</div>
+                            </div>
+                            <div class="bar" style="height: 78%">
+                                <div class="bar-value">78%</div>
+                                <div class="bar-label">ROI Docs</div>
+                            </div>
+                            <div class="bar" style="height: 35%">
+                                <div class="bar-value">35%</div>
+                                <div class="bar-label">Product Pages</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <div class="card-icon">👥</div>
+                            Persona Engagement
+                        </div>
+                    </div>
+                    <div class="persona-grid">
+                        <div class="persona-item">
+                            <div class="persona-info">
+                                <div class="persona-avatar">WM</div>
+                                <div class="persona-details">
+                                    <h4>Warehouse Managers</h4>
+                                    <p>Safety & efficiency focus</p>
+                                </div>
+                            </div>
+                            <div class="engagement-score">94</div>
+                        </div>
+
+                        <div class="persona-item">
+                            <div class="persona-info">
+                                <div class="persona-avatar">OL</div>
+                                <div class="persona-details">
+                                    <h4>Operations Leaders</h4>
+                                    <p>Cost reduction & ROI</p>
+                                </div>
+                            </div>
+                            <div class="engagement-score">88</div>
+                        </div>
+
+                        <div class="persona-item">
+                            <div class="persona-info">
+                                <div class="persona-avatar">HS</div>
+                                <div class="persona-details">
+                                    <h4>H&S Directors</h4>
+                                    <p>Injury prevention data</p>
+                                </div>
+                            </div>
+                            <div class="engagement-score">91</div>
+                        </div>
+
+                        <div class="persona-item">
+                            <div class="persona-info">
+                                <div class="persona-avatar">PT</div>
+                                <div class="persona-details">
+                                    <h4>Procurement Teams</h4>
+                                    <p>Budget & vendor eval</p>
+                                </div>
+                            </div>
+                            <div class="engagement-score">82</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dashboard-grid">
+                <div class="card full-width">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <div class="card-icon">🎯</div>
+                            Top Performing Outcome-Focused Content
+                        </div>
+                    </div>
+                    <div class="content-list">
+                        <div class="content-item">
+                            <div class="content-header">
+                                <div class="content-title">Mazda Toyota: 55% Shoulder Fatigue Reduction Case Study</div>
+                                <div class="content-type">CASE STUDY</div>
+                            </div>
+                            <div class="content-stats">
+                                <div class="stat">👁 2,847 views</div>
+                                <div class="stat">⏱ 4:32 avg. time</div>
+                                <div class="stat">📤 89 shares</div>
+                                <div class="stat">💼 34 leads</div>
+                            </div>
+                        </div>
+
+                        <div class="content-item">
+                            <div class="content-header">
+                                <div class="content-title">DB Schenker: 19% Productivity Increase Demo Video</div>
+                                <div class="content-type">VIDEO</div>
+                            </div>
+                            <div class="content-stats">
+                                <div class="stat">👁 3,421 views</div>
+                                <div class="stat">⏱ 2:18 avg. time</div>
+                                <div class="stat">📤 156 shares</div>
+                                <div class="stat">💼 52 leads</div>
+                            </div>
+                        </div>
+
+                        <div class="content-item">
+                            <div class="content-header">
+                                <div class="content-title">Warehouse ROI Calculator: 3-Year Savings Projection</div>
+                                <div class="content-type">TOOL</div>
+                            </div>
+                            <div class="content-stats">
+                                <div class="stat">👁 1,923 views</div>
+                                <div class="stat">⏱ 6:45 avg. time</div>
+                                <div class="stat">📤 67 shares</div>
+                                <div class="stat">💼 41 leads</div>
+                            </div>
+                        </div>
+
+                        <div class="content-item">
+                            <div class="content-header">
+                                <div class="content-title">BackX: Before/After Metrics for Logistics Operations</div>
+                                <div class="content-type">CASE STUDY</div>
+                            </div>
+                            <div class="content-stats">
+                                <div class="stat">👁 2,134 views</div>
+                                <div class="stat">⏱ 3:56 avg. time</div>
+                                <div class="stat">📤 73 shares</div>
+                                <div class="stat">💼 38 leads</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="roi-calculator">
+                <div class="card-title">
+                    <div class="card-icon">💰</div>
+                    Marketing ROI: Outcome-Focused Approach
+                </div>
+                <div class="roi-grid">
+                    <div class="roi-metric">
+                        <div class="roi-metric-value">3.8x</div>
+                        <div class="roi-metric-label">Lead Conversion Rate</div>
+                    </div>
+                    <div class="roi-metric">
+                        <div class="roi-metric-value">$247K</div>
+                        <div class="roi-metric-label">Pipeline Value / Story</div>
+                    </div>
+                    <div class="roi-metric">
+                        <div class="roi-metric-value">-42%</div>
+                        <div class="roi-metric-label">Cost Per Qualified Lead</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="insight-panel">
+                <div class="insight-header">
+                    <div class="insight-icon">💡</div>
+                    <div class="insight-title">Strategic Insights & Recommendations</div>
+                </div>
+                <div class="insight-list">
+                    <div class="insight-item">
+                        <div class="insight-bullet"></div>
+                        <div>Customer story content generates <strong>3.8x higher conversion rates</strong> compared to traditional product spec sheets, with warehouse managers showing the highest engagement.</div>
+                    </div>
+                    <div class="insight-item">
+                        <div class="insight-bullet"></div>
+                        <div>Demo videos with real customer footage perform exceptionally well (92% engagement), suggesting investment in <strong>2-3 minute outcome-focused videos</strong> for each major industry vertical.</div>
+                    </div>
+                    <div class="insight-item">
+                        <div class="insight-bullet"></div>
+                        <div>ROI calculators and one-page summaries reduce sales cycle by 18 days on average. Recommend creating <strong>persona-specific ROI templates</strong> for procurement teams.</div>
+                    </div>
+                    <div class="insight-item">
+                        <div class="insight-bullet"></div>
+                        <div>Product pages have lowest engagement (35%). Opportunity to <strong>integrate case study metrics directly</strong> into product pages rather than segregating them in a separate section.</div>
+                    </div>
+                    <div class="insight-item">
+                        <div class="insight-bullet"></div>
+                        <div>Before/after metrics are the most shared content type. Consider developing a <strong>standardized outcomes framework</strong> (fatigue reduction %, productivity increase, injury rate) for all customer stories.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- OPERATIONS DASHBOARD -->
+        <div id="operations-view" class="dashboard-view">
+            <div class="alert-banner">
+                <div class="alert-content">
+                    <span class="alert-icon">⚠️</span>
+                    <div>
+                        <div class="alert-text">Battery Component Inventory Below Threshold</div>
+                        <div class="alert-description">Current stock: 340 units • Reorder point: 500 units • Next delivery: Feb 2, 2026</div>
+                    </div>
+                </div>
+                <button class="alert-btn">Review Order</button>
+            </div>
+
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-label">Units Completed Today</div>
+                    <div class="metric-value">147</div>
+                    <div class="metric-trend trend-positive">
+                        <span class="trend-arrow">↑</span>
+                        <span>+12% vs. yesterday</span>
+                    </div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-label">Efficiency Rate</div>
+                    <div class="metric-value">94.2%</div>
+                    <div class="metric-trend trend-positive">
+                        <span class="trend-arrow">↑</span>
+                        <span>+2.1% this shift</span>
+                    </div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-label">Quality Pass Rate</div>
+                    <div class="metric-value">98.7%</div>
+                    <div class="metric-trend trend-positive">
+                        <span class="trend-arrow">↑</span>
+                        <span>Above 98% target</span>
+                    </div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-label">Avg Cycle Time</div>
+                    <div class="metric-value">38m</div>
+                    <div class="metric-trend trend-positive">
+                        <span class="trend-arrow">↓</span>
+                        <span>-4m improvement</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dashboard-grid">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <div class="card-icon">⚙️</div>
+                            Production Line Performance
+                        </div>
+                        <div class="card-badge">Current Shift</div>
+                    </div>
+                    <div class="production-lines">
+                        <div class="line-item">
+                            <div class="line-name">BackX Assembly</div>
+                            <div class="line-bar">
+                                <div class="line-fill" style="width: 96%"></div>
+                            </div>
+                            <div class="line-percentage">96%</div>
+                        </div>
+                        <div class="line-item">
+                            <div class="line-name">ShoulderX Assembly</div>
+                            <div class="line-bar">
+                                <div class="line-fill" style="width: 89%"></div>
+                            </div>
+                            <div class="line-percentage">89%</div>
+                        </div>
+                        <div class="line-item">
+                            <div class="line-name">LegX Assembly</div>
+                            <div class="line-bar">
+                                <div class="line-fill" style="width: 93%"></div>
+                            </div>
+                            <div class="line-percentage">93%</div>
+                        </div>
+                        <div class="line-item">
+                            <div class="line-name">Final Integration</div>
+                            <div class="line-bar">
+                                <div class="line-fill" style="width: 91%"></div>
+                            </div>
+                            <div class="line-percentage">91%</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <div class="card-icon">📅</div>
+                            Production Events
+                        </div>
+                        <div class="card-badge">Today</div>
+                    </div>
+                    <div class="timeline">
+                        <div class="timeline-item">
+                            <div class="timeline-time">14:15</div>
+                            <div class="timeline-content">
+                                <div class="timeline-title">Line 3 Maintenance Complete</div>
+                                <div class="timeline-description">Scheduled cleaning and calibration</div>
+                            </div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-time">12:30</div>
+                            <div class="timeline-content">
+                                <div class="timeline-title">BackX Batch #847 Shipped</div>
+                                <div class="timeline-description">50 units to DB Schenker</div>
+                            </div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-time">10:45</div>
+                            <div class="timeline-content">
+                                <div class="timeline-title">Quality Inspection Passed</div>
+                                <div class="timeline-description">Batch #846 - 48/48 units approved</div>
+                            </div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-time">09:20</div>
+                            <div class="timeline-content">
+                                <div class="timeline-title">Material Delivery Received</div>
+                                <div class="timeline-description">Servo motors - 300 units</div>
+                            </div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-time">07:00</div>
+                            <div class="timeline-content">
+                                <div class="timeline-title">Day Shift Started</div>
+                                <div class="timeline-description">All production lines operational</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card full-width">
+                <div class="card-header">
+                    <div class="card-title">
+                        <div class="card-icon">📦</div>
+                        Component Inventory Status
+                    </div>
+                    <div class="card-badge">Critical Items</div>
+                </div>
+                <div class="inventory-grid">
+                    <div class="inventory-item">
+                        <div class="inventory-header">
+                            <div class="inventory-name">Battery Packs (4000mAh)</div>
+                            <div class="inventory-status status-low">LOW</div>
+                        </div>
+                        <div class="inventory-details">
+                            <div class="detail-item">
+                                <span class="detail-label">Current</span>
+                                <span class="detail-value">340 units</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Weekly Use</span>
+                                <span class="detail-value">~280 units</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Reorder Point</span>
+                                <span class="detail-value">500 units</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Next Delivery</span>
+                                <span class="detail-value">Feb 2</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="inventory-item">
+                        <div class="inventory-header">
+                            <div class="inventory-name">Servo Motors (Shoulder)</div>
+                            <div class="inventory-status status-ok">OK</div>
+                        </div>
+                        <div class="inventory-details">
+                            <div class="detail-item">
+                                <span class="detail-label">Current</span>
+                                <span class="detail-value">1,240 units</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Weekly Use</span>
+                                <span class="detail-value">~180 units</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Reorder Point</span>
+                                <span class="detail-value">400 units</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Next Delivery</span>
+                                <span class="detail-value">Feb 15</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="inventory-item">
+                        <div class="inventory-header">
+                            <div class="inventory-name">Aluminum Frame Sections</div>
+                            <div class="inventory-status status-ok">OK</div>
+                        </div>
+                        <div class="inventory-details">
+                            <div class="detail-item">
+                                <span class="detail-label">Current</span>
+                                <span class="detail-value">2,890 units</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Weekly Use</span>
+                                <span class="detail-value">~420 units</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Reorder Point</span>
+                                <span class="detail-value">800 units</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Next Delivery</span>
+                                <span class="detail-value">Feb 8</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="inventory-item">
+                        <div class="inventory-header">
+                            <div class="inventory-name">Adjustment Straps (Set)</div>
+                            <div class="inventory-status status-critical">CRITICAL</div>
+                        </div>
+                        <div class="inventory-details">
+                            <div class="detail-item">
+                                <span class="detail-label">Current</span>
+                                <span class="detail-value">156 sets</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Weekly Use</span>
+                                <span class="detail-value">~160 sets</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Reorder Point</span>
+                                <span class="detail-value">300 sets</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Next Delivery</span>
+                                <span class="detail-value">Jan 31</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card full-width">
+                <div class="card-header">
+                    <div class="card-title">
+                        <div class="card-icon">📋</div>
+                        Active Orders & Fulfillment
+                    </div>
+                    <div class="card-badge">Priority Queue</div>
+                </div>
+                <table class="orders-table">
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Customer</th>
+                            <th>Product</th>
+                            <th>Quantity</th>
+                            <th>Due Date</th>
+                            <th>Progress</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="order-id">ORD-2847</td>
+                            <td>Mazda Toyota Manufacturing</td>
+                            <td>ShoulderX Pro</td>
+                            <td>120 units</td>
+                            <td>Feb 5, 2026</td>
+                            <td>85% Complete</td>
+                            <td><span class="order-status status-processing">Processing</span></td>
+                        </tr>
+                        <tr>
+                            <td class="order-id">ORD-2846</td>
+                            <td>DB Schenker - Hamburg</td>
+                            <td>BackX Standard</td>
+                            <td>50 units</td>
+                            <td>Jan 30, 2026</td>
+                            <td>Packaged</td>
+                            <td><span class="order-status status-shipped">Shipped</span></td>
+                        </tr>
+                        <tr>
+                            <td class="order-id">ORD-2845</td>
+                            <td>Amazon Fulfillment Centers</td>
+                            <td>BackX + LegX Bundle</td>
+                            <td>200 units</td>
+                            <td>Feb 12, 2026</td>
+                            <td>52% Complete</td>
+                            <td><span class="order-status status-processing">Processing</span></td>
+                        </tr>
+                        <tr>
+                            <td class="order-id">ORD-2844</td>
+                            <td>Boeing - Seattle Facility</td>
+                            <td>ShoulderX Pro</td>
+                            <td>75 units</td>
+                            <td>Feb 8, 2026</td>
+                            <td>Queue</td>
+                            <td><span class="order-status status-pending">Pending</span></td>
+                        </tr>
+                        <tr>
+                            <td class="order-id">ORD-2843</td>
+                            <td>Tesla Fremont</td>
+                            <td>MAX Complete System</td>
+                            <td>30 systems</td>
+                            <td>Feb 15, 2026</td>
+                            <td>25% Complete</td>
+                            <td><span class="order-status status-processing">Processing</span></td>
+                        </tr>
+                        <tr>
+                            <td class="order-id">ORD-2842</td>
+                            <td>UPS Distribution - Ontario</td>
+                            <td>BackX Standard</td>
+                            <td>85 units</td>
+                            <td>Jan 31, 2026</td>
+                            <td>Final QC</td>
+                            <td><span class="order-status status-processing">Processing</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function switchView(view) {
+            // Update active state on buttons
+            const buttons = document.querySelectorAll('.toggle-btn');
+            buttons.forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            // Update views
+            const marketingView = document.getElementById('marketing-view');
+            const operationsView = document.getElementById('operations-view');
+            const title = document.getElementById('dashboard-title');
+            const subtitle = document.getElementById('dashboard-subtitle');
+
+            if (view === 'marketing') {
+                marketingView.classList.add('active');
+                operationsView.classList.remove('active');
+                title.textContent = 'Marketing Impact Dashboard';
+                subtitle.textContent = 'Outcome-focused content performance & customer engagement metrics';
+            } else {
+                marketingView.classList.remove('active');
+                operationsView.classList.add('active');
+                title.textContent = 'Operations Dashboard';
+                subtitle.textContent = 'Real-time production intelligence & supply chain monitoring';
+            }
+        }
+    </script>
+</body>
+</html>
